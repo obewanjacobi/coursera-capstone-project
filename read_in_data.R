@@ -23,3 +23,11 @@ if (exists('tip_data') == FALSE){
 if (exists('user_data') == FALSE){
   user_data <- stream_in(file("./yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_user.json"))
 }
+
+# Then View it
+
+View(business_data)
+View(checkin_data)
+View(review_data)
+View(tip_data)
+View(user_data)

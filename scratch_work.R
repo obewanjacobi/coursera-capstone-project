@@ -12,3 +12,6 @@
 
 # business id's and user id's are consistent
 
+# Will probably mostly use user_data, will make a new dataframe to answer the question of whether or not frequent users
+# give better reviews. Could compare their reviews of places to nonfrequent users who went to the same companies.
+

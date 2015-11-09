@@ -3,6 +3,8 @@
 # working directory
 
 library(jsonlite)
+library(plyr)
+library(dplyr)
 
 if (exists('business_data') == FALSE){
   business_data <- stream_in(file("./yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_business.json"))
@@ -30,4 +32,20 @@ View(business_data)
 View(checkin_data)
 View(review_data)
 View(tip_data)
-View(user_data)
+
+# Let's Clean it up
+
+users <- user_data[user_data$review_count != 0,] #remove users with 0 reviews
+votes <- users$votes$funny + users$votes$useful + users$votes$cool
+users <- select(users, review_count, user_id, fans, average_stars)
+users <- mutate(users, votes = votes)
+
+
+
+
+
+
+
+
+
+

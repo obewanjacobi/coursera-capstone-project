@@ -15,3 +15,6 @@
 # Will probably mostly use user_data, will make a new dataframe to answer the question of whether or not frequent users
 # give better reviews. Could compare their reviews of places to nonfrequent users who went to the same companies.
 
+# We will look at reviews, not tips, as we can assume that tips are for people who aren't as dedicated, so they just use
+# yelp every so often.
+

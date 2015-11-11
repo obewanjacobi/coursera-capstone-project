@@ -28,6 +28,7 @@ for(i in (1:length(users$user_id))){
     temp <- data.frame(user,cities,distance, reviews)
     user_travel <- rbind(user_travel, temp)
 }
+user_travel = user_travel[-1,]
 write.csv(user_travel, file = "./user_travel") #this is because the code takes a long time to run.
 #Note: This will work even though the longitude may not match the latitude. Draw graph to think about it.
 

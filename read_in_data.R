@@ -36,6 +36,10 @@ colnames(reviews) <- c("user_id", "review_id", "business_id")
 full_data <- left_join(reviews, businesses, by = "business_id")
 full_data <- left_join(full_data, users, by = "user_id")
 
+# There are apparently users in full_data that weren't in the original users data we had, so we will remove NAs
+
+full_data <- full_data[complete.cases(full_data),]
+
 
 #Let's clean up our environment
 
@@ -45,8 +49,6 @@ rm(business_data, businesses, review_data, reviews, user_data)
 
 travel <- full_data[,-c(2,3,7,8,9,10), drop = FALSE]
 
-View(users)
-View(full_data)
 
 
 

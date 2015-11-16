@@ -1,0 +1,41 @@
+---
+title: "Capstone Presentation: Yelp Data Set"
+author: "Jacob Townson"
+date: "02/20/2015"
+output: ioslides_presentation
+---
+
+```{r include=FALSE}
+require(mosaic)
+```
+
+## Question
+
+Is there a correlation between the frequency of how often someone reviews on Yelp and the amount they travel? If so, do more frequent reviewers travel more than non-frequent reviewers based off of the cities and coordinates they review at?
+
+Why is this interesting? 
+
+- It could be helpful for organizational purposes on Yelp. If more frequent users travel more, maybe they could make recommendations of organizations for users to visit when they travel. 
+
+## Methods
+
+
+
+## Results
+
+
+
+## Discussion
+
+
+
+
+
+
+
+
+
+
+
+
+

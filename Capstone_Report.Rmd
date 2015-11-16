@@ -39,9 +39,6 @@ if (exists('user_data') == FALSE){
 }
 
 users <- user_data[user_data$review_count != 0,] #remove users with 0 reviews
-votes <- users$votes$funny + users$votes$useful + users$votes$cool
-users <- select(users, review_count, user_id, fans, average_stars)
-users <- mutate(users, votes = votes)
 
 businesses <- data.frame(business_data$business_id, business_data$city, business_data$latitude, business_data$longitude)
 colnames(businesses) <- c("business_id", "city", "latitude", "longitude")
@@ -51,11 +48,11 @@ colnames(reviews) <- c("user_id", "review_id", "business_id")
 
 full_data <- left_join(reviews, businesses, by = "business_id")
 full_data <- left_join(full_data, users, by = "user_id")
-full_data <- full_data[complete.cases(full_data),] #get rid of NA's
 
 rm(business_data, businesses, review_data, reviews, user_data) #cleaning up environment
 travel <- full_data[,-c(2,3,7,8,9,10), drop = FALSE]
-travel <- travel %>% group_by(user_id, city) %>% mutate(revCount = n()) 
+travel <- travel %>% group_by(user_id, city) %>% mutate(revCount = n())
+travel2 <- travel %>% filter(row_number() == 1) 
 
 user <- c(0)
 cities <- c(0)
@@ -156,7 +153,8 @@ full_data <- full_data[complete.cases(full_data),] #get rid of NA's
 
 rm(business_data, businesses, review_data, reviews, user_data) #cleaning up environment
 travel <- full_data[,-c(2,3,7,8,9,10), drop = FALSE]
-travel <- travel %>% group_by(user_id, city) %>% mutate(revCount = n()) 
+travel <- travel %>% group_by(user_id, city) %>% mutate(revCount = n())
+travel2 <- travel %>% filter(row_number() == 1) 
 
 user <- c(0)
 cities <- c(0)

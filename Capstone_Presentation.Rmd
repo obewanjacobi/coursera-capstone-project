@@ -19,6 +19,13 @@ Why is this interesting?
 
 ## Methods
 
+- The methodology of this project began with a massive amount of cleaning data. The end product was a dataframe that consisted only of the user ids, the number of cities visited, the maximum radius of travel, and the number of reviews made. 
+
+- The models were made using the lm function in R:
+
+```{r}
+
+```
 
 
 ## Results

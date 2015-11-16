@@ -18,58 +18,12 @@ I thought it would be interesting to try to find out if there was a correlation 
 
 # Methods and Data
 
-To begin, the data had to be read into R. To download the data, simply go to this link: [data](https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/yelp_dataset_challenge_academic_dataset.zip). This data needs to be put in the working directory, then read in using the code chunk in **Figure 1 Part A**. Next, a massive amount of data cleaning had to be done. I knew I needed to separate the data by user, the number of cities traveled, and also distance based on latitude and longitude. In order to do this, I ran the (rather large) code chunk seen in **Figure 1 Part B** . The final product of this code is the user_travel data frame (warning: those wanting to recreate the project, this takes a long time to run). This data frame shows us each user, how many cities they traveled to, and a the radius at which they traveled based on latitude and longitude. 
+To begin, the data had to be read into R. To download the data, simply go to this link: [data](https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/yelp_dataset_challenge_academic_dataset.zip). This data needs to be put in the working directory, then read into the global environment in R. Next, a massive amount of data cleaning had to be done. I knew I needed to separate the data by user, the number of cities traveled, and also distance based on latitude and longitude. In order to do this, I ran the (rather large) code chunk seen in **Figure 1** . The final product of this code is the user_travel data frame (warning: those wanting to recreate the project, this takes a long time to run). This data frame shows us each user, how many cities they traveled to, and a the radius at which they traveled based on latitude and longitude. 
 
-Here I will explain step by step what exactly is happening in **Figure 1 Part B**. To make the full_data data frame, I organized the collection of all of the businesses traveled to based on user and city. Then in travel, I narrowed the data frame to only contain things necessary to show where the users traveled to. Then the final for loop in the chunk shows how the main data frame was made. It was done by taking each user, counting how many cites they visited, then using the distance formula on their largest range of area traveled based on latitude and longitude. I realize that the distance formula here isn't exact because it doesn't account for the curve of the Earth, but I figured since we were only dealing with the US, it wouldn't affect the calculation too much. 
+Here I will explain step by step what exactly is happening in **Figure 1**. To make the full_data data frame, I organized the collection of all of the businesses traveled to based on user and city. Then in travel, I narrowed the data frame to only contain things necessary to show where the users traveled to. Then the final for loop in the chunk shows how the main data frame was made. It was done by taking each user, counting how many cites they visited, then using the distance formula on their largest range of area traveled based on latitude and longitude. I realize that the distance formula here isn't exact because it doesn't account for the curve of the Earth, but I figured since we were only dealing with the US, it wouldn't affect the calculation too much. 
 
 ```{r include = FALSE}
-if (exists('business_data') == FALSE){
-  business_data <- stream_in(file("./yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_business.json"))
-}
-if (exists('review_data') == FALSE){
-  review_data <- stream_in(file("./yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_review.json"))
-}
-
-if (exists('user_data') == FALSE){
-  user_data <- stream_in(file("./yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_user.json"))
-}
-
-users <- user_data[user_data$review_count != 0,] #remove users with 0 reviews
-votes <- users$votes$funny + users$votes$useful + users$votes$cool
-users <- select(users, review_count, user_id, fans, average_stars)
-users <- mutate(users, votes = votes)
-
-businesses <- data.frame(business_data$business_id, business_data$city, business_data$latitude, business_data$longitude)
-colnames(businesses) <- c("business_id", "city", "latitude", "longitude")
-
-reviews <- data.frame(review_data$user_id, review_data$review_id, review_data$business_id)
-colnames(reviews) <- c("user_id", "review_id", "business_id") 
-
-full_data <- left_join(reviews, businesses, by = "business_id")
-full_data <- left_join(full_data, users, by = "user_id")
-full_data <- full_data[complete.cases(full_data),]
-
-rm(business_data, businesses, review_data, reviews, user_data) #cleaning up environment
-travel <- full_data[,-c(2,3,7,8,9,10), drop = FALSE]
-travel <- travel %>% group_by(user_id, city) %>% mutate(revCount = n())
-travel2 <- travel %>% filter(row_number() == 1) 
-
-user <- c(0)
-cities <- c(0)
-distance <- c(0)
-reviews <- c(0)
-user_travel <- data.frame(user,cities,distance, reviews)
-for(i in (1:length(users$user_id))){
-    total_cities <- travel2[travel2$user_id == users$user_id[i],]
-    user <- users$user_id[i]
-    cities <- length(total_cities$city)
-    distance <- sqrt(((max(total_cities$latitude)-min(total_cities$latitude))^2)+
-      (max(total_cities$latitude)-min(total_cities$latitude))^2)
-    reviews <- users$review_count[i]
-    temp <- data.frame(user,cities,distance, reviews)
-    user_travel <- rbind(user_travel, temp)
-}
-user_travel = user_travel[-1,]
+user_travel <- read.csv("./user_travel")
 ```
 
 Now that we have our data, we can make the model to see how the variables relate. We can make an exploratory model to see how the variables relate to each other. To do this, we will simply use the lm function in R.
@@ -79,13 +33,15 @@ city.predict <- lm(cities~reviews, data = user_travel)
 distance.predict <- lm(distance~reviews, data = user_travel)
 ```
 
-Then we can view the residual plots for these models in order to see if they fit as a linear regression model. These plots can be found in **Figure 2**. As can be seen, in neither case the data seems to fit linearly. In fact, it looks much more quadratic when plotting the reviews vs the cities traveled to and distance. So I figured I would add in the squared and cubed values to the data to try and fit it more appropriately, then use the stepAIC function to find which model is the most appropriate for this situation (**Figure 3**). 
+Then we can view the residual plots for these models in order to see if they fit as a linear regression model. These plots can be found in **Figure 2**. As can be seen, in the city case the data does not seem to fit linearly. The distance case is similar. In fact, they looks much more quadratic when plotting the reviews vs the cities traveled to and distance. So I figured I would add in the squared and cubed values to the data to try and fit it more appropriately, then use the stepAIC function to find which model is the most appropriate for this situation (**Figure 3**). 
 
 ```{r include = FALSE}
 library(MASS)
 library(xtable)
 options(xtable.comment = FALSE)
+```
 
+```{r include = FALSE}
 reviewssq <- (user_travel$reviews)^2
 reviewscu <- (user_travel$reviews)^3
 user_travel <- cbind(user_travel, reviewssq, reviewscu)
@@ -121,23 +77,6 @@ In retrospect, I wish I had more time to do the project. If I had more time, I w
 # Appendix
 
 ## Figure 1
-### Part A
-Reading in the Data
-```{r eval = FALSE}
-if (exists('business_data') == FALSE){
-  business_data <- stream_in(file("./yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_business.json"))
-}
-if (exists('review_data') == FALSE){
-  review_data <- stream_in(file("./yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_review.json"))
-}
-
-if (exists('user_data') == FALSE){
-  user_data <- stream_in(file("./yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_user.json"))
-}
-```
-
-### Part B
-Cleaning the Data
 
 ```{r eval = FALSE}
 users <- user_data[user_data$review_count != 0,] #remove users with 0 reviews
@@ -182,14 +121,8 @@ user_travel = user_travel[-1,]
 
 ### City Data
 
-```{r include=FALSE}
+```{r fig.height=2}
 plot(city.predict, which=1:2, labels.id = '')
-```
-
-### Distance Data
-
-```{r include=FALSE}
-plot(distance.predict, which=1:2, labels.id = '')
 ```
 
 ## Figure 3
@@ -210,13 +143,13 @@ distance.predict2 <- (stepAIC(distance.predict2, scope = list(lower = ~reviews))
 
 ### City Data
 
-```{r include=FALSE}
+```{r fig.height=2}
 plot(city.predict2, which=1:2, labels.id = '')
 ```
 
 ### Distance Data
 
-```{r include=FALSE}
+```{r fig.height=2}
 plot(distance.predict2, which=1:2, labels.id = '')
 ```
 

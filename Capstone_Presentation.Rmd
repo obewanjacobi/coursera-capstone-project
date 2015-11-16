@@ -7,6 +7,7 @@ output: ioslides_presentation
 
 ```{r include=FALSE}
 require(mosaic)
+require(MASS)
 ```
 
 ## Question
@@ -19,22 +20,53 @@ Why is this interesting?
 
 ## Methods
 
+```{r include = FALSE}
+read.csv("./user_travel")
+```
+
 - The methodology of this project began with a massive amount of cleaning data. The end product was a dataframe that consisted only of the user ids, the number of cities visited, the maximum radius of travel, and the number of reviews made. 
 
 - The models were made using the lm function in R:
 
 ```{r}
+city.predict <- lm(cities~reviews, data = user_travel)
+distance.predict <- lm(distance~reviews, data = user_travel)
+```
 
+- After analysis of the residuals of these models, it seemed logical to treat the models as what could possibly be a quadratic model rather than simple linear regression models. So we ran the code:
+
+```{r}
+reviewssq <- (user_travel$reviews)^2
+reviewscu <- (user_travel$reviews)^3
+user_travel <- cbind(user_travel, reviewssq, reviewscu)
+city.predict2 <- lm(cities~reviews+reviewssq+reviewscu, data = user_travel)
+distance.predict2 <- lm(distance~reviews+reviewssq+reviewscu, data = user_travel)
+city.predict2 <- (stepAIC(city.predict2, scope = list(lower = ~reviews)))
+distance.predict2 <- (stepAIC(distance.predict2, scope = list(lower = ~reviews)))
 ```
 
 
 ## Results
 
+Using the stepAIC function in our methods gives us the best possible model given the variables input into the regression models. Because we have our best model, we can move on to looking at the residuals and P values. 
 
+- City Data
+
+```{r fig.height=3, include=FALSE}
+plot(city.predict2, which=1:2, labels.id = '')
+```
+
+- Distance Data
+
+```{r fig.height=3, include=FALSE}
+plot(distance.predict2, which=1:2, labels.id = '')
+```
 
 ## Discussion
 
+After using the stepAIC function and also adding in the squared and cubed values for the number of reviews per user, it can be concluded that reviews and the amount of travel are not correlated. Even though the P values are small, implying that the values are heavily correlated, the residuals seem to show otherwise. The line for the residuals vs the fitted seem to be all right based purely on the line, but the data is so scattered it would lead us to believe differently. Then the Q-Q plots both seem to imply a quadratic relationship, but then when adding in squared and cubed values, not much of a difference seems to be made. It almost seems as though there may be no correlation at all, and we were simply lucky to get the results that we did. 
 
+In retrospect, I wish I had more time to do the project. If I had more time, I would add other variables to the model to see if maybe they had more to do with the amount of travel a user makes rather than purely the reviews. I think this would make for interesting future work. 
 
 
 

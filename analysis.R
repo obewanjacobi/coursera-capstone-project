@@ -3,13 +3,14 @@
 library(jsonlite)
 library(plyr)
 library(dplyr)
+library(xtable)
+library(MASS)
 
 # Count how many times a user has reviewed in a city:
 
 travel <- travel %>% group_by(user_id, city) %>% mutate(revCount = n()) # revCount is number of times user has reviewed
                                                                         # in that city
 travel2 <- travel %>% filter(row_number() == 1)                         # travel2 makes each user unique by city
-c <- count(travel2, vars = revCount)
 
 
 # Let's make a dataframe just with number of cities, distances, and number of reviews
@@ -40,10 +41,25 @@ View(travel)
 View(travel2)
 View(user_travel)
 
+# Now we will use the user_travel to make models
 
+city.predict <- lm(cities~reviews, data = user_travel)
+distance.predict <- lm(distance~reviews, data = user_travel)
 
+summary(city.predict)$coef
+summary(distance.predict)$coef
 
+# Try #2
 
+reviewssq <- (user_travel$reviews)^2
+reviewscu <- (user_travel$reviews)^3
+user_travel <- cbind(user_travel, reviewssq, reviewscu)
+
+city.predict <- lm(cities~reviews+reviewssq+reviewscu, data = user_travel)
+distance.predict <- lm(distance~reviews+reviewssq+reviewscu, data = user_travel)
+
+city.predict <- (stepAIC(city.predict, scope = list(lower = ~reviews)))
+distance.predict <- (stepAIC(distance.predict, scope = list(lower = ~reviews)))
 
 
 
